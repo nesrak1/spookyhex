@@ -1,5 +1,7 @@
 # Spooky Hex (shex) hex editor
 
+![Screenshot](screenshot.png)
+
 C99/C++98 Win32/GTK+ 3 & 4-based hex editor with no external dependencies.
 
 Released on spooky day. Not finished or ready for use yet.
