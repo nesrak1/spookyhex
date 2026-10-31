@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/images">
+    <file>assets/icon.png</file>
+    <file>assets/file_poly.png</file>
+    <file>assets/folder-open_poly.png</file>
+    <file>assets/save_poly.png</file>
+  </gresource>
+</gresources>

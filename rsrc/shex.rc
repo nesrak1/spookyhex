@@ -1,0 +1,28 @@
+1 24 "shex.manifest"
+100 ICON "icon.ico"
+101 ICON "file_poly.ico"
+102 ICON "folder-open_poly.ico"
+103 ICON "save_poly.ico"
+VS_VERSION_INFO VERSIONINFO
+    FILEVERSION 1,0,0,0
+    PRODUCTVERSION 1,0,0,0
+    FILEOS 0x40004
+    FILETYPE 0x1
+{
+    BLOCK "StringFileInfo"
+    {
+        BLOCK "040904b0"
+        {
+            VALUE "CompanyName", "Fried Chickens"
+            VALUE "FileDescription", "SpookyHex"
+            VALUE "FileVersion", "1.0.0.0"
+            VALUE "OriginalFilename", "shex.exe"
+            VALUE "ProductName", "SpookyHex"
+            VALUE "ProductVersion", "1.0.0.0"
+        }
+    }
+    BLOCK "VarFileInfo"
+    {
+        VALUE "Translation", 0x409, 1200
+    }
+}
