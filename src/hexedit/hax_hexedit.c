@@ -88,11 +88,8 @@ void hexedit_paint(void* control, void* param)
 
     // how many bytes in this document?
     bp_len_t total_length = bp_doc_length(bp_doc);
-    // how many rows in this document for the given bytes per row?
-    // int total_row_count = wtk_max((total_length + bytes_per_row - 1) / bytes_per_row, 1);
-    int total_row_count = hexedit_row_count(self);
 
-    wtk_set_scrollbar_range(&self->b, WTK_SCROLLDIR_VERTICAL, 0, total_row_count - 1, 1);
+    wtk_set_scrollbar_range(&self->b, WTK_SCROLLDIR_VERTICAL, 0, hexedit_row_count(self) - 1, 1);
 
     // a single character width/height
     // we're assuming all characters are the same width/height (based on the font's "0")
@@ -104,7 +101,7 @@ void hexedit_paint(void* control, void* param)
     // how many rows fit on the screen
     int vis_row_count = (self->b.h / row_height) + 1;
     // the start offset into the file based on the screen scroll position
-    bp_len_t row_byte_off = bytes_per_row * self->active_doc->scroll_y;
+    bp_len_t row_byte_off = self->active_doc->scroll_y;
 
     // how many digits for the address string?
     int address_digits = hexedit_addr_digits(total_length);
@@ -195,7 +192,6 @@ void hexedit_paint(void* control, void* param)
             || (last_row && cursor_check_off == total_length);
 
         if (cursor_on_this_row) {
-            int cursor_yoff = row_yoff;
             int sub_xoff = 0;
             int pane_xoff = 0;
             int byte_width = 1;
@@ -214,14 +210,8 @@ void hexedit_paint(void* control, void* param)
                         sub_xoff = 2;
                         break;
                     case HEXEDIT_CURSOR_RIGHT_PREV:
-                        // if (cursor_off == total_length) {
-                        //     // can't right-prev, be left of this char
-                        //     sub_xoff = 0;
-                        // } else {
                         sub_xoff = 2;
                         cell_xoff = bytes_per_row - 1;
-                        // cursor_yoff -= row_height;
-                        // }
                         break;
                 }
             } else if (cursor_inf->active_pane == HEXEDIT_PANE_CHARS) {
@@ -235,21 +225,15 @@ void hexedit_paint(void* control, void* param)
                         sub_xoff = 1;
                         break;
                     case HEXEDIT_CURSOR_RIGHT_PREV:
-                        // if (cursor_off == total_length) {
-                        //     // can't right-prev, be left of this char
-                        //     sub_xoff = 0;
-                        // } else {
                         sub_xoff = 1;
                         cell_xoff = bytes_per_row - 1;
-                        // cursor_yoff -= row_height;
-                        // }
                         break;
                 }
             }
 
             int cursor_xoff = pane_xoff + (cell_xoff * byte_width + sub_xoff) * char_width;
             wtk_draw_set_color(ctx, 0, 0, 0);
-            wtk_draw_rectangle(ctx, cursor_xoff, cursor_yoff, 2, char_height);
+            wtk_draw_rectangle(ctx, cursor_xoff, row_yoff, 2, char_height);
             wtk_draw_set_sys_color(ctx, WTK_SYS_COLOR_TEXT_COLOR);
         }
 
@@ -262,10 +246,6 @@ void hexedit_paint(void* control, void* param)
         row_yoff += row_height;
         row_byte_off += read_bytes;
     }
-
-    // wtk_draw_set_color(ctx, 255, 0, 0);
-    // wtk_draw_rectangle(ctx, 100, 100 - self->scroll_y * 10, 150, 50);
-    // wtk_draw_rectangle(ctx, 300, 300 - self->scroll_y * 10, 50, 100);
 }
 
 void hexedit_scroll(void* control, void* param)
@@ -278,7 +258,7 @@ void hexedit_scroll(void* control, void* param)
     WtkControl* self_ctrl = (WtkControl*)self;
     WtkScrollInfo* scroll_inf = (WtkScrollInfo*)param;
     if (scroll_inf->direction == WTK_SCROLLDIR_VERTICAL) {
-        doc->scroll_y = scroll_inf->value;
+        doc->scroll_y = scroll_inf->value * doc->bytes_per_row;
     }
 
     wtk_draw_redraw(self_ctrl);
@@ -296,20 +276,22 @@ void hexedit_mouse_scroll(void* control, void* param)
     if (scroll_inf->direction != WTK_SCROLLDIR_VERTICAL)
         return;
 
+    // the extra scroll math is so touchpad scrolling is more smooth
     doc->scroll_y_frac -= scroll_inf->value * SCROLL_ROWS_PER_NOTCH;
 
-    int64_t new_scroll_y = doc->scroll_y;
+    bp_len_t new_scroll_y = doc->scroll_y;
     if (abs(doc->scroll_y_frac) >= WTK_SCROLL_DELTA) {
         int scroll_y_delta = doc->scroll_y_frac / WTK_SCROLL_DELTA;
-        new_scroll_y += scroll_y_delta;
+        new_scroll_y += scroll_y_delta * doc->bytes_per_row;
         doc->scroll_y_frac -= WTK_SCROLL_DELTA * scroll_y_delta;
     }
 
-    int64_t max_y = (int64_t)hexedit_row_count(self) - 1;
-    new_scroll_y = wtk_max(0, wtk_min(new_scroll_y, max_y));
+    // clamp new scroll offset to addresses visible in the document
+    bp_len_t max_snap_addr = bp_doc_length(self->active_doc->tree_doc) / doc->bytes_per_row * doc->bytes_per_row;
+    new_scroll_y = wtk_max(0, wtk_min(new_scroll_y, max_snap_addr));
 
     doc->scroll_y = new_scroll_y;
-    wtk_set_scrollbar_pos((WtkControl*)self, WTK_SCROLLDIR_VERTICAL, (int)new_scroll_y);
+    wtk_set_scrollbar_pos((WtkControl*)self, WTK_SCROLLDIR_VERTICAL, (int)(new_scroll_y / doc->bytes_per_row));
     wtk_draw_redraw(self_ctrl);
 }
 
@@ -456,6 +438,7 @@ void hexedit_key_down(void* control, void* param)
             if (cursor_inf->end_off > 0) {
                 bp_doc_delete(self->active_doc->tree_doc, cursor_inf->end_off - 1, 1);
                 cursor_inf->end_off--;
+                cursor_inf->end_cur = HEXEDIT_CURSOR_LEFT;
                 makes_redraw = true;
             }
             break;

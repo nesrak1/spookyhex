@@ -388,7 +388,6 @@ void bp_doc_delete_impl(BpDoc* self, bp_len_t pos, bp_len_t length)
     bp_tree_free(middle);
     // self->working, mid_right and middle are freed at this point
     self->working = bp_tree_join(left, right);
-
 }
 
 bool bp_doc_insert(BpDoc* self, bp_len_t pos, const uint8_t* data, bp_len_t length)
@@ -417,7 +416,7 @@ bool bp_doc_delete(BpDoc* self, bp_len_t pos, bp_len_t length)
     if (pos < 0 || pos > bp_doc_length(self))
         return false;
     
-    bp_history_begin_edit(&self->history, pos, BP_EDIT_KIND_BACKSPACE, self->working);
+    bp_history_begin_edit(&self->history, pos + length, BP_EDIT_KIND_BACKSPACE, self->working);
     {
         // try fast shrink
         if (!bp_doc_fast_shrink(self, pos, length)) {
@@ -425,6 +424,6 @@ bool bp_doc_delete(BpDoc* self, bp_len_t pos, bp_len_t length)
             bp_doc_delete_impl(self, pos, length);
         }
     }
-    bp_history_complete_edit(&self->history, pos + length, BP_EDIT_KIND_BACKSPACE);
+    bp_history_complete_edit(&self->history, pos, BP_EDIT_KIND_BACKSPACE);
     return true;
 }

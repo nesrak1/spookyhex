@@ -52,8 +52,12 @@ typedef struct {
     BpDoc* tree_doc;
 
     HexEditCursorInfo cursor;
-    int32_t scroll_x;
-    int64_t scroll_y;
+    // the scroll byte offset (both x and y are single byte offsets)
+    // the start address will always be scroll_x + scroll_y
+    // todo: currently only scroll_y is supported
+    bp_len_t scroll_x;
+    bp_len_t scroll_y;
+
     int32_t scroll_x_frac;
     int32_t scroll_y_frac;
 

@@ -63,7 +63,7 @@ void bp_path_prune_empty(BpPath* self, BpTree* tree) {
         bp_node_delete_child(node, child_idx, true);
     }
 
-    self->node_count = i;
+    self->node_count = i + 1;
     bp_path_fix(self);
     bp_tree_collapse_root(tree);
 }
@@ -306,7 +306,7 @@ void bp_tree_split(BpTree* self, bp_len_t off, BpTree** out_left, BpTree** out_r
 void bp_tree_collapse_root(BpTree* self)
 {
     while (self->root->kind == BP_NODE_INTERIOR && self->root->child_count == 1) {
-        BpNode* child = self->root->interior.child_nodes[0];
+        BpNode* child = bp_node_ref(self->root->interior.child_nodes[0]);
         bp_node_unref(self->root);
         self->root = child;
         self->height--;

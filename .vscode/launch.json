@@ -8,7 +8,7 @@
             "name": "(Windows) Launch",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/shex.exe",
+            "program": "${workspaceFolder}/build/shex.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

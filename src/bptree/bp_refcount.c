@@ -1,6 +1,6 @@
-#include <stdlib.h>
-
 #include "bp_refcount.h"
+
+#include <stdlib.h>
 
 void* _bp_ref_ref(BpRcBase* self) {
     self->refcount++;

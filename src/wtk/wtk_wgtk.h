@@ -269,6 +269,8 @@ WtkControl* wtk_create_button(WtkControl* parent, int x, int y, int width, int h
 WtkControl* wtk_create_label(WtkControl* parent, int x, int y, int width, int height, const char* text);
 WtkControl* wtk_create_textbox(WtkControl* parent, int x, int y, int width, int height, const char* text);
 
+bool wtk_delete_control(WtkControl* control);
+
 void wtk_window_set_title(WtkWindow* window, const char* title);
 void wtk_window_set_icon(WtkWindow* window, WtkImage* large_icon, WtkImage* small_icon);
 

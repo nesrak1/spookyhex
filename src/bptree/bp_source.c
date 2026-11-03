@@ -1,7 +1,8 @@
+#include "bp_source.h"
+
 #include <stdlib.h>
 #include <string.h>
 
-#include "bp_source.h"
 #include "wtk_mem.h"
 
 bp_len_t bp_buffer_append(BpBuffer* self, const uint8_t* data, bp_len_t length)

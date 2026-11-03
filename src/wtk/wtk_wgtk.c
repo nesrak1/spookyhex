@@ -392,6 +392,23 @@ WtkControl* wtk_create_textbox(WtkControl* parent, int x, int y, int width, int 
     return NULL;
 }
 
+bool wtk_delete_control(WtkControl* control)
+{
+    bool success = false;
+    if (control->con_type == WTK_CONTROL_WINDOW) {
+#if wtk_win32
+        // maybe we should have a window close function
+        // instead of reusing the WM_CLOSE handler?
+        SendMessage(control->con_hnd, WM_CLOSE, 0, 0);
+        success = true; // todo: check success
+#endif // wtk_win32
+    } else {
+        // todo: anything else
+    }
+
+    return success;
+}
+
 void wtk_window_set_title(WtkWindow* window, const char* title)
 {
 #if wtk_win32

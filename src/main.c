@@ -13,6 +13,7 @@ void menu_item_new(void* control, void* param)
 {
     HexEditDocument* doc = hexedit_doc_new_empty();
     hexedit_set_doc(hex_editor, doc);
+    wtk_control_focus(hex_editor);
 }
 
 void menu_item_open(void* control, void* param)
@@ -26,9 +27,24 @@ void menu_item_open(void* control, void* param)
         goto done;
 
     hexedit_set_doc(hex_editor, doc);
+    wtk_control_focus(hex_editor);
 
 done:
     wtk_free(file_path);
+}
+
+void menu_item_exit(void* control, void* param)
+{
+    if (hex_editor->active_doc != NULL) {
+        WtkMbResponse resp = wtk_messagebox_show(
+            "Exit Spooky Hex?", "Are you sure you want quit?",
+            WTK_MBICON_QUESTION, WTK_MBBUTTONS_YES_NO);
+        
+        if (resp == WTK_MBRESPONSE_NO)
+            return;
+    }
+
+    wtk_delete_control(&main_win->b);
 }
 
 void menu_item_about(void* control, void* param)
@@ -72,6 +88,7 @@ void app_main()
     //
     wtk_event_menu_item_add(new_mi, WTK_EVENT_CLICK, menu_item_new);
     wtk_event_menu_item_add(open_mi, WTK_EVENT_CLICK, menu_item_open);
+    wtk_event_menu_item_add(exit_mi, WTK_EVENT_CLICK, menu_item_exit);
 
     WtkMenu* edit_menu = wtk_create_menu(menu_bar, "Edit");
     WtkMenuItem* undo_mi = wtk_create_menu_item(edit_menu, WTK_MENU_TEXT, "Undo");

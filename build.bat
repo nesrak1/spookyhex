@@ -1,5 +1,5 @@
 mkdir build
-cl /MD /D wtk_win32 /Fo.\obj\ ^
+cl /MD /D wtk_win32 /Fo.\obj\ /Fd.\build\ ^
     /I src/bptree ^
     /I src/hexedit ^
     /I src/wtk ^
@@ -21,4 +21,4 @@ cl /MD /D wtk_win32 /Fo.\obj\ ^
     rsrc/shex.res ^
     /link user32.lib Wtsapi32.lib gdi32.lib Comdlg32.lib Comctl32.lib Shell32.lib Ole32.lib ^
     /subsystem:windows,5.02 ^
-    /out:shex.exe
+    /out:.\build\shex.exe
